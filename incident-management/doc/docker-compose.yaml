@@ -1,0 +1,16 @@
+version: '2'
+services:
+  incident-manage:
+    image: incident-management:latest
+    restart: always
+    dns_search: .
+    privileged: true
+    expose:
+      - "8080"
+    container_name: "incident-management"
+    volumes:
+      - /data/backup:/apps/logs/
+    environment:
+      - spring.profiles.active=prod
+      - log.level=DEBUG
+      - TZ=Asia/Shanghai
