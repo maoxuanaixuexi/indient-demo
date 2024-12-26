@@ -1,5 +1,8 @@
 package com.homework.incident.config;
 
+import com.google.common.base.Charsets;
+import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnels;
 import com.homework.incident.entity.Incident;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +27,15 @@ public class RedisConfig {
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());  // 用于序列化 Redis 的值
 
         return template;
+    }
+
+    @Bean
+    public BloomFilter<String> bloomFilter() {
+        // 预期插入的数量
+        int expectedInsertions = 10000;
+        // 期望的误报率
+        double fpp = 0.01;
+        return BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), expectedInsertions, fpp);
     }
 }
 
