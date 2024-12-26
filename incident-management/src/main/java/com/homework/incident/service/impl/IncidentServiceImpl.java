@@ -1,11 +1,13 @@
 package com.homework.incident.service.impl;
 
+import com.google.common.hash.BloomFilter;
+import com.homework.incident.common.ResponseCode;
 import com.homework.incident.entity.Incident;
+import com.homework.incident.exception.BusinessException;
 import com.homework.incident.repository.IncidentRepository;
 import com.homework.incident.service.IncidentInfoService;
 import com.homework.incident.utils.Consts;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -23,9 +25,14 @@ public class IncidentServiceImpl implements IncidentInfoService {
     IncidentRepository incidentRepository;
     @Autowired
     private RedisTemplate<String, Incident> redisTemplate;
+
+    @Autowired
+    private BloomFilter bloomFilter;
     @Override
     public Incident addIncident(Incident incident) {
-        return incidentRepository.save(incident);
+        Incident in = incidentRepository.save(incident);
+        bloomFilter.put(in.getId().toString());
+        return in;
     }
     @Override
     public List<Incident> getAllIncidents() {
@@ -41,6 +48,9 @@ public class IncidentServiceImpl implements IncidentInfoService {
     }
     @Override
     public Optional<Incident> getIncidentById(Long id) {
+        if(!bloomFilter.mightContain(id.toString())){
+            throw new BusinessException(ResponseCode.NOTEXIST.getCode(), ResponseCode.NOTEXIST.getMessage());
+        }
         Incident incident = redisTemplate.opsForValue().get(Consts.CACHE_VALUE + id);
         if(incident == null){
             Optional<Incident> info = incidentRepository.findById(id);
