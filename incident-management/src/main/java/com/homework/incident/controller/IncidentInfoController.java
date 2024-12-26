@@ -52,14 +52,18 @@ public class IncidentInfoController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Incident> getIncidentById(@PathVariable Long id) {
-        return incidentInfoService.getIncidentById(id);
+    public ResponseWrapper<Incident> getIncidentById(@PathVariable Long id) {
+        Optional<Incident> incident = incidentInfoService.getIncidentById(id);
+        return new ResponseWrapper.Builder<Incident>().code(ResponseCode.SUCCESS.getCode()).message(ResponseCode.SUCCESS.getMessage()).data(incident.get()).build();
+
     }
 
     @PutMapping("/{id}")
-    public Incident updateIncident(@PathVariable Long id, @RequestBody Incident incident) {
+    public ResponseWrapper<Incident> updateIncident(@PathVariable Long id, @RequestBody Incident incident) {
         incident.setId(id);
-        return incidentInfoService.updateIncident(incident);
+        Incident incident1 = incidentInfoService.updateIncident(incident);
+        return new ResponseWrapper.Builder<Incident>().code(ResponseCode.SUCCESS.getCode()).message(ResponseCode.SUCCESS.getMessage()).data(incident1).build();
+
     }
 
     @DeleteMapping("/{id}")
